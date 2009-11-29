@@ -18,32 +18,32 @@ module WTF
     # If the argument is in World Time Format, it must can contain a date part,
     # a time part, and a colon to separate them.  Here are some examples of valid formats:
     #
-    #   - "FJKRM:BROMQ" -- This is a fully specified World Time Format date and
-    #     time.  The first part is the date part and the second part is the time
-    #     part.  The date part cannot be longer than five characters.  The time
-    #     part can be longer than five characters, but any characters after
-    #     the fifth character are ignored when calculating.
-    #   - ":BROMQ" -- You can leave out the date part.  Today is assumed.
-    #   - "FJKRM:" -- You can leave out the time part.  The beginning of the
-    #     Julian day is assumed (which is noon).
-    #   - "BROMQ" -- If you leave out the colon, it is assumed that you are
-    #     giving the time, not the date.
-    #   - "RM:BROMQ" -- You can leave out some of the digits for the date.  If
-    #     you do, the remaining digits will be filled in according to today's
-    #     date.  If today's date is FMBAZ, then "RM:BROMQ" becomes
-    #     "FMBRM:BROMQ".
-    #   - ":BR" -- You don't have to specify all five of the time digits.
-    #   - "A:B" -- This is a valid format.
+    # - "FJKRM:BROMQ" -- This is a fully specified World Time Format date and
+    #   time.  The first part is the date part and the second part is the time
+    #   part.  The date part cannot be longer than five characters.  The time
+    #   part can be longer than five characters, but any characters after
+    #   the fifth character are ignored when calculating.
+    # - ":BROMQ" -- You can leave out the date part.  Today is assumed.
+    # - "FJKRM:" -- You can leave out the time part.  The beginning of the
+    #   Julian day is assumed (which is noon).
+    # - "BROMQ" -- If you leave out the colon, it is assumed that you are
+    #   giving the time, not the date.
+    # - "RM:BROMQ" -- You can leave out some of the digits for the date.  If
+    #   you do, the remaining digits will be filled in according to today's
+    #   date.  If today's date is FMBAZ, then "RM:BROMQ" becomes
+    #   "FMBRM:BROMQ".
+    # - ":BR" -- You don't have to specify all five of the time digits.
+    # - "A:B" -- This is a valid format.
     #
     # Also note:
     #
-    #   - The date conversion does not work before the Gregorian calendar change
-    #     that happened in October 1582.
-    #   - Since the date part is limited to five characters, there is an upper
-    #     bound for how far into the future you can do a date conversion.
-    #   - The time part is limited to five characters and therefore the
-    #     time precision is limited to about 10 milliseconds.
-    #   - Leap seconds were not taken into account.
+    # - The date conversion does not work before the Gregorian calendar change
+    #   that happened in October 1582.
+    # - Since the date part is limited to five characters, there is an upper
+    #   bound for how far into the future you can do a date conversion.
+    # - The time part is limited to five characters and therefore the
+    #   time precision is limited to about 10 milliseconds.
+    # - Leap seconds were not taken into account.
     #
     def initialize(time = nil)
       if time
@@ -131,12 +131,12 @@ module WTF
 
     #--------------------#
     #   PRIVATE METHODS  #
-    #++++++++++++++++++++#
+    #++
 
     private
     
-    MILLIS_IN_A_DAY = 24 * 60 * 60 * 1000  # millis means milliseconds
     SECONDS_IN_A_DAY = 86400
+    MILLIS_IN_A_DAY = SECONDS_IN_A_DAY * 1000  # millis means milliseconds
 
     def convert_from_wtf(wtf)
 

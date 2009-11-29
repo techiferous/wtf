@@ -106,15 +106,15 @@ module WTF
         hour = utc.hour + 12
       end
       fractional = hour * 3600 + utc.min * 60 + utc.sec + (utc.usec / 1000000.0)
-      date_part = decimal_to_alphabase(julian_day)
+      date_part = self.class.decimal_to_alphabase(julian_day)
       time_part = time_to_wtf(fractional*1000)
       
       date_part + ':' + time_part
     end
     
-    def decimal_to_alphabase(julian_day)
+    def self.decimal_to_alphabase(julian_day)
       if (julian_day.floor != julian_day)
-        raise "Real numbers not supported." # fil in...
+        raise ArgumentError.new("Floats are not supported.")
       end
       alphabase = ""
       base26 = julian_day.to_s(26)

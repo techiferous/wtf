@@ -136,28 +136,32 @@ module WTF
     private
     
     MILLIS_IN_A_DAY = 24 * 60 * 60 * 1000  # millis means milliseconds
+    SECONDS_IN_A_DAY = 86400
 
     def convert_from_wtf(wtf)
-      
-      if wtf.nil? || wtf.empty?
-        raise ArgumentError.new("Argument is empty.")
-      end
+
+      raise ArgumentError.new("Argument is empty.") if wtf.nil? || wtf.empty?
 
       # If no colon is given, we assume we have a time, not a date.
       if !wtf.include?(":")
         wtf = ":" + wtf
       end
+
       if wtf !~ /^([A-Z]{0,5}):([A-Z]*)$/
         raise ArgumentError.new("Time format error")
       end
       wtf_date = $1
       wtf_time = $2
       
+      # we need to fill in ambiguous dates.  If today is FJSTR: and the given
+      # date is BM:, we fill in the blanks according to today's date
+      # like so: FJSBM:
       if wtf_date.length < 5
         reference_date = self.class.now.date_part
         wtf_date = reference_date[0, 5-wtf_date.length] + wtf_date
       end
       
+      # we don't care about anything more precise than 5 time digits
       if wtf_time.length > 5
         wtf_time = wtf_time[0, 5]
       end
@@ -173,6 +177,7 @@ module WTF
         fractional += (wtf_time[i]-65) / (26**(i+1)).to_f
       end
       
+      # adjust for the astronomical Julian day, which starts at noon
       if fractional >= 0.5
         fractional -= 0.5
         julian_date += 1
@@ -188,15 +193,15 @@ module WTF
       # Why Ruby doesn't provide a to_time method, I don't know.  So I'm resorting
       # to calling private (!) methods on the Date class.  Shame on Ruby
       # and shame on me! :)
-      fraction_of_seconds = date.send(:sec_fraction) * 86400 # seconds in a day
+      fraction_of_seconds = date.send(:sec_fraction) * SECONDS_IN_A_DAY
       microseconds = fraction_of_seconds * 1000000
       utc_time = ::Time.utc(date.year,
-                           date.month,
-                           date.day,
-                           date.send(:hour),
-                           date.send(:min),
-                           date.send(:sec),
-                           microseconds)
+                            date.month,
+                            date.day,
+                            date.send(:hour),
+                            date.send(:min),
+                            date.send(:sec),
+                            microseconds)
 
       utc_time.getlocal
 
@@ -204,11 +209,9 @@ module WTF
     
     def convert_to_wtf(time)      
       utc = time.utc
-      
       date = ::Date.civil(utc.year, utc.month, utc.day)
       julian_day = date.jd.to_i
-      seconds_in_a_day = 86400;
-      # adjust for astronomical julian day
+      # adjust for the astronomical Julian day, which starts at noon
       if utc.hour >= 12
         hour = utc.hour - 12
       else
@@ -216,9 +219,8 @@ module WTF
         julian_day -= 1
       end
       fractional = hour * 3600 + utc.min * 60 + utc.sec + (utc.usec / 1000000.0)
-      date_part = self.class.decimal_to_alphabase(julian_day)
-      time_part = self.class.time_to_wtf(fractional*1000)
-      
+      date_part = self.class.send(:decimal_to_alphabase, julian_day)
+      time_part = self.class.send(:time_to_wtf, fractional*1000)
       date_part + ':' + time_part
     end
     
@@ -250,6 +252,7 @@ module WTF
       end
       alphabase
     end
+    private_class_method :decimal_to_alphabase
     
     # Given an integer representing the number of milliseconds into the Julian
     # day, return a five-character string representing the time in World Time
@@ -260,7 +263,9 @@ module WTF
         raise ArgumentError.new("Negative values are not supported.")
       end
       if (millis_into_the_day >= MILLIS_IN_A_DAY)
-        raise "Value (#{millis_into_the_day}) must be smaller than the number of milliseconds in a day (#{MILLIS_IN_A_DAY})." # fil in ...
+        message = "Value (#{millis_into_the_day}) must be smaller than"
+        message << " the number of milliseconds in a day (#{MILLIS_IN_A_DAY})."
+        raise ArgumentError.new(message)
       end
       result = ""
       # For the first loop iteration, the unit represents the number of
@@ -277,6 +282,7 @@ module WTF
       end
       result
     end
+    private_class_method :time_to_wtf
     
   end
 end

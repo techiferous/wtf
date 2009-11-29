@@ -1,0 +1,17 @@
+= World Time Format Converter
+
+== Description
+
+The WTF gem provides a Ruby class to convert between standard
+time and World Time Format.  For more information, visit
+http://www.worldtimeformat.com
+
+== Examples
+
+  WTF::Date.new("FIWIT:NAAAA").as_utc  # converts a WTF datetime to a Ruby Time object
+  WTF::Date.new(time).as_wtf           # converts from a Ruby Time object to a WTF string
+  WTF::Date.now.as_wtf                 # returns a WTF string representing the current datetime
+  WTF::Date.now.date_part              # returns a WTF string representing the current date
+  WTF::Date.now.time_part              # returns a WTF string representing the current time
+  WTF::Date.convert("FIWIT:NAAAA")     # convenience method for converting
+  WTF::Date.convert(time)              # convenience method for converting

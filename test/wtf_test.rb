@@ -93,8 +93,8 @@ class WtfTest < Test::Unit::TestCase
     assert_equal time, WTF::Date.new("FJNXQ:").as_utc
     assert_equal time, WTF::Date.new("NXQ:").as_utc
     time = Time.utc(2002, 7, 10, 13, 55, 1, 777000)
-    assert_in_delta time.to_f, WTF::Date.new("FJNXQ:CCAAA").as_utc.to_f, 0.003
-    assert_in_delta time.to_f, WTF::Date.new("FJNXQ:CC").as_utc.to_f, 0.003
+    assert_in_delta time.to_f, WTF::Date.new("FJNXQ:CCAAA").as_utc.to_f, 0.006
+    assert_in_delta time.to_f, WTF::Date.new("FJNXQ:CC").as_utc.to_f, 0.006
     assert_equal 12, WTF::Date.new(":AA").as_utc.hour
     assert_equal 0, WTF::Date.new(":AA").as_utc.min
     assert_equal 0, WTF::Date.new(":N").as_utc.hour
@@ -124,6 +124,15 @@ class WtfTest < Test::Unit::TestCase
     assert time <= time2
     assert time < future
     assert time > past
+  end
+  
+  def test_convert
+    time = Time.utc(1970, 1, 1, 0)
+    assert_equal time, WTF::Date.convert("FIWIT:NAAAA")
+    assert_equal time, WTF::Date.convert("FIWIT:NAA")
+    assert_equal time, WTF::Date.convert("FIWIT:N")
+    assert_equal time, WTF::Date.convert("IWIT:N")
+    assert_equal "FIWIT:NAAAA", WTF::Date.convert(time)
   end
 
 end

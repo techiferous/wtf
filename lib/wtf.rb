@@ -1,7 +1,50 @@
 require 'date'
+
 module WTF
   class Date
     
+    # creates a new WTF::Date object.  The argument can be a string representing the
+    # date and/or time in World Time Format, or it can be a Time object.  If the
+    # argument is missing, Time.now is assumed.
+    #
+    # Examples:
+    #
+    #   WTF::Date.new(":NB")     #=> returns a new WTF::Date object for the WTF time :NB
+    #   WTF::Date.new(":RJA")    #=> returns a new WTF::Date object for the WTF date :RJA
+    #   WTF::Date.new("MM:BRT")  #=> returns a new WTF::Date object for the WTF datetime MM:BRT
+    #   WTF::Date.new            #=> returns a new WTF::Date object corresponding to right now
+    #   WTF::Date.new(Time.utc(2010, 5, 6))  #=> returns a new WTF::Date object for the given Time
+    #
+    # If the argument is in World Time Format, it must can contain a date part,
+    # a time part, and a colon to separate them.  Here are some examples of valid formats:
+    #
+    #   - "FJKRM:BROMQ" -- This is a fully specified World Time Format date and
+    #     time.  The first part is the date part and the second part is the time
+    #     part.  The date part cannot be longer than five characters.  The time
+    #     part can be longer than five characters, but any characters after
+    #     the fifth character are ignored when calculating.
+    #   - ":BROMQ" -- You can leave out the date part.  Today is assumed.
+    #   - "FJKRM:" -- You can leave out the time part.  The beginning of the
+    #     Julian day is assumed (which is noon).
+    #   - "BROMQ" -- If you leave out the colon, it is assumed that you are
+    #     giving the time, not the date.
+    #   - "RM:BROMQ" -- You can leave out some of the digits for the date.  If
+    #     you do, the remaining digits will be filled in according to today's
+    #     date.  If today's date is FMBAZ, then "RM:BROMQ" becomes
+    #     "FMBRM:BROMQ".
+    #   - ":BR" -- You don't have to specify all five of the time digits.
+    #   - "A:B" -- This is a valid format.
+    #
+    # Also note:
+    #
+    #   - The date conversion does not work before the Gregorian calendar change
+    #     that happened in October 1582.
+    #   - Since the date part is limited to five characters, there is an upper
+    #     bound for how far into the future you can do a date conversion.
+    #   - The time part is limited to five characters and therefore the
+    #     time precision is limited to about 10 milliseconds.
+    #   - Leap seconds were not taken into account.
+    #
     def initialize(time = nil)
       if time
         if time.is_a? String
@@ -17,27 +60,78 @@ module WTF
       @wtf = convert_to_wtf(@time)
     end
     
+    # now is a synonym for WTF::Date.new.  It returns a WTF::Date object initialized with
+    # the current date and time.
+    #
     def self.now
       self.new
     end
+
+    # convert is a convenience method to make it easier to convert between WTF
+    # times and standard times.
+    #    
+    # Examples:
+    # 
+    #   WTF::Date.convert("FIWIT:NAAAA")  #=> same as WTF::Date.new("FIWIT:NAAAA").as_utc
+    #   WTF::Date.convert(time)           #=> same as WTF::Date.new(time).as_wtf
+    #
+    def self.convert(arg)
+      return nil if arg.nil?
+      return self.new(arg).as_utc if arg.is_a?(String)
+      return self.new(arg).as_wtf if arg.is_a?(Time)
+      raise ArgumentError.new("Argument must be a String or a Time.")
+    end
     
+    # returns a Time object representing the WTF::Date's date and time in UTC.
+    #
+    # Examples:
+    #
+    #   standard_time = WTF::Date.new("FIWIT:NAAAA").as_utc
+    #   standard_time = WTF::Date.new(":BJR").as_utc
+    #   standard_time = WTF::Date.new("XQ:ARM").as_utc
+    #
     def as_utc
       @time
     end
     
+    # returns a string representing the date and time in World Time Format.
+    #
+    # Example:
+    #
+    #   wtf_date = WTF::Date.new(Time.utc(2002, 7, 10, 13, 55, 1, 777000))
+    #   wtf_date.as_wtf  #=> "FJNXQ:CCAAA"
+    #
     def as_wtf
       @wtf
     end
 
+    # returns just the World Time Format date.
+    #
+    # Example:
+    #
+    #   wtf_date = WTF::Date.new(Time.utc(2002, 7, 10, 13, 55, 1, 777000))
+    #   wtf_date.date_part  #=> "FJNXQ"
+    #
     def date_part
       @wtf =~ /^([A-Z]{0,5}):([A-Z]*)$/
       $1
     end
 
+    # returns just the World Time Format time.
+    #
+    # Example:
+    #
+    #   wtf_date = WTF::Date.new(Time.utc(2002, 7, 10, 13, 55, 1, 777000))
+    #   wtf_date.time_part  #=> "CCAAA"
+    #
     def time_part
       @wtf =~ /^([A-Z]{0,5}):([A-Z]*)$/
       $2
     end
+
+    #--------------------#
+    #   PRIVATE METHODS  #
+    #++++++++++++++++++++#
 
     private
     
@@ -157,6 +251,10 @@ module WTF
       alphabase
     end
     
+    # Given an integer representing the number of milliseconds into the Julian
+    # day, return a five-character string representing the time in World Time
+    # Format.
+    #
     def self.time_to_wtf(millis_into_the_day)
       if (millis_into_the_day < 0)
         raise ArgumentError.new("Negative values are not supported.")

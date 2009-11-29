@@ -21,7 +21,7 @@ module WTF
       self.new
     end
     
-    def as_standard_time
+    def as_utc
       @time
     end
     
@@ -30,11 +30,13 @@ module WTF
     end
 
     def date_part
-      @wtf.split(':').first
+      @wtf =~ /^([A-Z]{0,5}):([A-Z]*)$/
+      $1
     end
 
     def time_part
-      @wtf.split(':').last
+      @wtf =~ /^([A-Z]{0,5}):([A-Z]*)$/
+      $2
     end
 
     private
@@ -47,11 +49,11 @@ module WTF
       if !wtf.include?(":")
         wtf = ":" + wtf
       end
-      if wtf !~ /^[A-Z]{0,5}:[A-Z]*$/
+      if wtf !~ /^([A-Z]{0,5}):([A-Z]*)$/
         raise "Time format error" # fill in........
       end
-      wtf_date = wtf.split(':').first
-      wtf_time = wtf.split(':').last
+      wtf_date = $1
+      wtf_time = $2
       
       if wtf_date.length < 5
         reference_date = self.class.now.date_part
@@ -72,6 +74,13 @@ module WTF
       for i in (0..(wtf_time.length-1)) do
         fractional += (wtf_time[i]-65) / (26**(i+1)).to_f
       end
+      
+      if fractional >= 0.5
+        fractional -= 0.5
+        julian_date += 1
+      else
+        fractional += 0.5
+      end
 
       offset = ::DateTime.now.offset
       date = ::Date.jd(julian_date+fractional)
@@ -82,12 +91,15 @@ module WTF
       # Why Ruby doesn't provide a to_time method, I don't know.  So I'm resorting
       # to calling private (!) methods on the Date class.  Shame on Ruby
       # and shame on me! :)
+      fraction_of_seconds = date.send(:sec_fraction) * 86400 # seconds in a day
+      microseconds = fraction_of_seconds * 1000000
       utc_time = ::Time.utc(date.year,
                            date.month,
                            date.day,
                            date.send(:hour),
                            date.send(:min),
-                           date.send(:sec)+date.send(:sec_fraction))
+                           date.send(:sec),
+                           microseconds)
 
       utc_time.getlocal
 
@@ -104,6 +116,7 @@ module WTF
         hour = utc.hour - 12
       else
         hour = utc.hour + 12
+        julian_day -= 1
       end
       fractional = hour * 3600 + utc.min * 60 + utc.sec + (utc.usec / 1000000.0)
       date_part = self.class.decimal_to_alphabase(julian_day)

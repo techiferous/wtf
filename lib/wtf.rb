@@ -86,7 +86,6 @@ module WTF
         fractional += 0.5
       end
 
-      offset = ::DateTime.now.offset # we don't use this!
       date = ::Date.jd(julian_date+fractional)
       
       # Normally I love Ruby and how it gets out of my way, but this is

@@ -107,7 +107,7 @@ module WTF
       end
       fractional = hour * 3600 + utc.min * 60 + utc.sec + (utc.usec / 1000000.0)
       date_part = self.class.decimal_to_alphabase(julian_day)
-      time_part = time_to_wtf(fractional*1000)
+      time_part = self.class.time_to_wtf(fractional*1000)
       
       date_part + ':' + time_part
     end
@@ -135,13 +135,13 @@ module WTF
         elsif ((c >= 48) && (c <= 57)) # number 0-9 -> A-J
           alphabase += (c+17).chr
         else
-          raise "Unexpected character." # fil in ............
+          raise "Unexpected character."
         end
       end
       alphabase
     end
     
-    def time_to_wtf(millis_into_the_day)
+    def self.time_to_wtf(millis_into_the_day)
       if (millis_into_the_day < 0)
         raise "Negative values are not supported." # fil in ...........
       end

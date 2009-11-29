@@ -29,12 +29,32 @@ class WtfTest < Test::Unit::TestCase
     end
   end
 
-  def test_basic
+  def test_time_to_wtf
+    assert_equal "AAAAA", WTF::Date.send(:time_to_wtf, 0) # midnight
+    assert_equal "NAAAA", WTF::Date.send(:time_to_wtf, 12*60*60*1000) # noon
+    assert_equal "BAAAA", WTF::Date.send(:time_to_wtf, 3323077)
+  end
+
+  def test_to_wtf
     time = Time.utc(2002, 7, 10, 13, 55, 1, 777000)
     wtf = WTF::Date.new(time)
     assert_equal "FJNXQ", wtf.date_part
     assert_equal "CCAAA", wtf.time_part
     assert_equal "FJNXQ:CCAAA", wtf.as_wtf
+  end
+
+  def test_converting_to_wtf
+    time = Time.utc(2002, 7, 10, 13, 55, 1, 777000)
+    wtf = WTF::Date.new(time)
+    assert_equal "FJNXQ", wtf.date_part
+    assert_equal "CCAAA", wtf.time_part
+    assert_equal "FJNXQ:CCAAA", wtf.as_wtf
+  end
+
+  def test_converting_to_standard_time
+  end
+
+  def test_now
   end
 
 end

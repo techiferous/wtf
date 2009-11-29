@@ -97,7 +97,7 @@ module WTF
       utc = time.utc
       
       date = ::Date.civil(utc.year, utc.month, utc.day)
-      julian_day = date.ajd.to_i
+      julian_day = date.jd.to_i
       seconds_in_a_day = 86400;
       # adjust for astronomical julian day
       if utc.hour >= 12
@@ -148,9 +148,9 @@ module WTF
       unit = MILLIS_IN_A_DAY
       remainder = millis_into_the_day  # milliseconds left to process
       5.times do
-        unit = unit.to_f / 26
-        num_units = (remainder.floor / unit.to_f).to_i
-        remainder = remainder - (num_units * unit)
+        unit /= 26.0
+        num_units = (remainder.floor / unit).to_i
+        remainder -= (num_units * unit)
         result += (num_units.to_i+65).chr
       end
       result

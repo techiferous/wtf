@@ -112,13 +112,21 @@ module WTF
       date_part + ':' + time_part
     end
     
-    def self.decimal_to_alphabase(julian_day)
-      if (julian_day.floor != julian_day)
+    # Given a number in base 10, return a number in alphabase.  Note that
+    # alphabase is different than base 26.  Base 26 uses digits within the range
+    # 0-9,a-p.  Alphabase is also based on a radix of 26, but uses digits within
+    # the range A-Z.
+    # 
+    # To simplify the algorithm, this function does not accept real numbers as
+    # input, only integers.
+    # 
+    def self.decimal_to_alphabase(decimal)
+      if (decimal.floor != decimal)
         raise ArgumentError.new("Floats are not supported.")
       end
       alphabase = ""
-      base26 = julian_day.to_s(26)
-      for i in (0..(base26.length-1)) do
+      base26 = decimal.to_s(26)
+      for i in (0..(base26.length-1))
         c = base26[i]
         if (c == 45) # hyphen for negative numbers
           alphabase += "-"

@@ -9,10 +9,10 @@ module WTF
         elsif time.is_a? Time
           @time = time
         else
-          raise "Bad argument" # fill in......
+          raise ArgumentError.new("Argument must be a String or a Time.")
         end
       else
-        @time = Time.now
+        @time = ::Time.now
       end
       @wtf = convert_to_wtf(@time)
     end
@@ -44,13 +44,17 @@ module WTF
     MILLIS_IN_A_DAY = 24 * 60 * 60 * 1000  # millis means milliseconds
 
     def convert_from_wtf(wtf)
+      
+      if wtf.nil? || wtf.empty?
+        raise ArgumentError.new("Argument is empty.")
+      end
 
       # If no colon is given, we assume we have a time, not a date.
       if !wtf.include?(":")
         wtf = ":" + wtf
       end
       if wtf !~ /^([A-Z]{0,5}):([A-Z]*)$/
-        raise "Time format error" # fill in........
+        raise ArgumentError.new("Time format error")
       end
       wtf_date = $1
       wtf_time = $2
@@ -82,7 +86,7 @@ module WTF
         fractional += 0.5
       end
 
-      offset = ::DateTime.now.offset
+      offset = ::DateTime.now.offset # we don't use this!
       date = ::Date.jd(julian_date+fractional)
       
       # Normally I love Ruby and how it gets out of my way, but this is
@@ -156,7 +160,7 @@ module WTF
     
     def self.time_to_wtf(millis_into_the_day)
       if (millis_into_the_day < 0)
-        raise "Negative values are not supported." # fil in ...........
+        raise ArgumentError.new("Negative values are not supported.")
       end
       if (millis_into_the_day >= MILLIS_IN_A_DAY)
         raise "Value (#{millis_into_the_day}) must be smaller than the number of milliseconds in a day (#{MILLIS_IN_A_DAY})." # fil in ...

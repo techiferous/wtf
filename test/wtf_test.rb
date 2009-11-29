@@ -95,9 +95,35 @@ class WtfTest < Test::Unit::TestCase
     time = Time.utc(2002, 7, 10, 13, 55, 1, 777000)
     assert_in_delta time.to_f, WTF::Date.new("FJNXQ:CCAAA").as_utc.to_f, 0.003
     assert_in_delta time.to_f, WTF::Date.new("FJNXQ:CC").as_utc.to_f, 0.003
+    assert_equal 12, WTF::Date.new(":AA").as_utc.hour
+    assert_equal 0, WTF::Date.new(":AA").as_utc.min
+    assert_equal 0, WTF::Date.new(":N").as_utc.hour
+    assert_equal 0, WTF::Date.new(":N").as_utc.min
+    assert_equal 0, WTF::Date.new("N").as_utc.hour
+    assert_equal 0, WTF::Date.new("N").as_utc.min
+    assert_equal 12, WTF::Date.new(":").as_utc.hour
+    assert_equal 0, WTF::Date.new(":").as_utc.min
+    assert_raise ArgumentError do
+      WTF::Date.new("").as_utc
+    end
+    assert_raise ArgumentError do
+      WTF::Date.new("ABCDEF:ABC").as_utc # date part can't be longer than five characters
+    end
+    assert_nothing_raised do
+      WTF::Date.new("FJCDE:ABCDEFGHIJ").as_utc # time part can be longer than five characters
+    end
   end
 
   def test_now
+    wtf = WTF::Date.now
+    wtf2 = WTF::Date.now
+    time = wtf.as_utc
+    time2 = wtf2.as_utc
+    past = Time.utc(2009, 11, 28)
+    future = Time.utc(2030, 1, 12)
+    assert time <= time2
+    assert time < future
+    assert time > past
   end
 
 end
